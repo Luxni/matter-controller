@@ -1,5 +1,5 @@
 {
-  "name": "ble-scan",
+  "name": "matter-controller",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -16,6 +16,9 @@
     "@babel/plugin-transform-dynamic-import": "^7.27.1",
     "@babel/preset-flow": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
+    "@babel/runtime": "^7.28.2",
+    "@craftzdog/react-native-buffer": "^6.1.0",
+    "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
     "@matter/general": "file:../../matter/matter.js/packages/general",
     "@matter/model": "file:../../matter/matter.js/packages/model",
@@ -23,11 +26,13 @@
     "@matter/protocol": "file:../../matter/matter.js/packages/protocol",
     "@matter/react-native": "file:../../matter/matter.js/packages/react-native",
     "@matter/types": "file:../../matter/matter.js/packages/types",
-    "@noble/curves": "^1.9.6",
-    "@react-native-async-storage/async-storage": "2.1.2",
+    "@noble/curves": "^1.9.7",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@shopify/flash-list": "1.7.6",
     "babel-preset-expo": "^13.2.3",
     "elliptic": "^6.6.1",
     "expo": "^53.0.20",
@@ -54,13 +59,13 @@
     "react-native-permissions": "^5.4.1",
     "react-native-polyfill-globals": "^3.1.0",
     "react-native-quick-crypto": "^0.7.16",
-    "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated": "3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-udp": "^4.1.7",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "@react-native-community/netinfo": "11.4.1"
+    "recyclerlistview": "^4.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -68,6 +73,7 @@
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
+    "tsx": "^4.20.4",
     "typescript": "~5.8.3"
   },
   "private": true

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "ble-scan",
-    "slug": "ble-scan",
+    "name": "matter-controller",
+    "slug": "matterjs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "blescan",
+    "scheme": "matterjs",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -22,7 +22,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
