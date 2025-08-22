@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from "react-native";
+import { PermissionsAndroid, Platform, StyleSheet, View } from "react-native";
 import { Button, Dialog, Text, TextInput } from 'react-native-paper';
 import { Controller } from '@/src/controller/Controller';
 
@@ -189,6 +189,28 @@ const CommissioningThreadDialog: React.FC<ThreadDialogProps> = ({
 
 }
 
+const requestLocationPermission = async () => {
+    if (Platform.OS === 'android') {
+        try {
+
+            const granted = await PermissionsAndroid.requestMultiple([
+                PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            ]);
+            if (
+                granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED
+            ) {
+                return true;
+            }
+
+        } catch (error) {
+            console.error(`get location permission error: ${error}`);
+            return false;
+        }
+    }
+
+    return true;
+};
+
 export default function Index() {
 
     const controllerRef = useRef<Controller>(null);
@@ -197,6 +219,10 @@ export default function Index() {
     const [wifiDialogVisible, setWifiDialogVisible] = useState(false);
 
     useEffect(() => {
+        const hasPermission = requestLocationPermission();
+        if (!hasPermission) {
+            console.error(`get location permission error!!!`)
+        }
         controllerRef.current = new Controller();
     }, []);
 

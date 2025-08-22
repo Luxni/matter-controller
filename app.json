@@ -33,7 +33,7 @@
         "BLUETOOTH_CONNECT",
         "ACCESS_FINE_LOCATION"
       ],
-      "package": "com.anonymous.blescan"
+      "package": "com.anonymous.matterjs"
     },
     "web": {
       "bundler": "metro",
