@@ -5,7 +5,7 @@
  */
 
 import { Construction, isDeepEqual, StorageContext } from "#general";
-import { ServerEndpointStore } from "#storage/server/ServerEndpointStore.js";
+import { ServerEndpointStore } from "#node";
 import { Val } from "@matter/protocol";
 
 /**

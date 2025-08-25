@@ -43,8 +43,6 @@ const CommissioningWifiDialog: React.FC<WifiDialogProps> = ({
 
     useEffect(() => {
 
-        setWifiSSID("");
-        setWifiCredentials("");
         setDiscriminator("3840");
         setPasscode("20202021");
         setNodeId("1");
@@ -189,19 +187,51 @@ const CommissioningThreadDialog: React.FC<ThreadDialogProps> = ({
 
 }
 
-const requestLocationPermission = async () => {
+const requestPermission = async () => {
     if (Platform.OS === 'android') {
         try {
 
-            const granted = await PermissionsAndroid.requestMultiple([
+            const locationGranted = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            ]);
-            if (
-                granted["android.permission.ACCESS_FINE_LOCATION"] === PermissionsAndroid.RESULTS.GRANTED
+                {
+                    title: "request location permission",
+                    message: "need location permission",
+                    buttonNeutral: "latet",
+                    buttonNegative: "undo",
+                    buttonPositive: "yes"
+                }
+            );
+
+            const bluetoothScanGranted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+                {
+                    title: "request bluetooth scan permission",
+                    message: "need scan permission",
+                    buttonNeutral: "latet",
+                    buttonNegative: "undo",
+                    buttonPositive: "yes"
+                }
+            );
+
+            const bluetoothConnectGranted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+                {
+                    title: "request bluetooth connect permission",
+                    message: "need connect permission",
+                    buttonNeutral: "latet",
+                    buttonNegative: "undo",
+                    buttonPositive: "yes"
+                }
+            );
+
+            if (locationGranted === PermissionsAndroid.RESULTS.GRANTED
+                && bluetoothScanGranted === PermissionsAndroid.RESULTS.GRANTED
+                && bluetoothConnectGranted === PermissionsAndroid.RESULTS.GRANTED
             ) {
                 return true;
             }
 
+            // PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
         } catch (error) {
             console.error(`get location permission error: ${error}`);
             return false;
@@ -219,10 +249,6 @@ export default function Index() {
     const [wifiDialogVisible, setWifiDialogVisible] = useState(false);
 
     useEffect(() => {
-        const hasPermission = requestLocationPermission();
-        if (!hasPermission) {
-            console.error(`get location permission error!!!`)
-        }
         controllerRef.current = new Controller();
     }, []);
 

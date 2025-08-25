@@ -1,10 +1,8 @@
 
-// const { getDefaultConfig } = require('expo/metro-config');
 import { getDefaultConfig } from 'expo/metro-config';
-import path from 'path';
 import fs from "fs";
+import path from 'path';
 
-import pc from "picocolors"
 
 const matter_link = (subpath: string) => {
     const modulePath = path.resolve(__dirname, `./node_modules/@matter/${subpath}`);
@@ -36,6 +34,7 @@ config.resolver!.extraNodeModules = {
     "@matter/types": matter_link("types"),
     "@matter/protocol": matter_link("protocol"),
     "@matter/react-native": matter_link("react-native"),
+    // "@protocol-chip/matter.js": path.resolve( "../../matter/matter.js/packages/matter.js/")
 };
 
 config.watchFolders = [
@@ -46,6 +45,7 @@ config.watchFolders = [
     matter_link("types"),
     matter_link("protocol"),
     matter_link("react-native"),
+    // path.resolve("../../matter/matter.js/packages/matter.js/"),
 ];
 
 
@@ -110,6 +110,14 @@ config.resolver!.resolveRequest = (context, moduleName, platform) => {
         const mappedPath = path.resolve(__dirname, 'node_modules/@noble', subpath);
         return context.resolveRequest(context, mappedPath, platform);
     }
+
+    // if ("@project-chip/matter.js" === moduleName) {
+    //     const mappedPath = path.resolve("../../matter/matter.js/packages/matter.js/");
+    //     return {
+    //         "filePath": mappedPath,
+    //         "type": "sourceFile"
+    //     };
+    // }
 
     if ([
         "#general",
@@ -330,6 +338,7 @@ config.resolver!.resolveRequest = (context, moduleName, platform) => {
 
     if ([
         "#globals/Status.js",
+        "#globals/Priority.js",
     ].includes(moduleName)) {
         const subpath = moduleName.substring("#globals/".length);
         // const mappedPath = path.resolve(matter_link("types"), "dist/esm", "globals", subpath);

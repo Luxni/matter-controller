@@ -18,9 +18,9 @@ import {
     TlvNoResponse,
     TypeFromPartialBitSchema,
 } from "#types";
-import { Endpoint } from "../../device/Endpoint";
-import { createAttributeServer } from "./AttributeServer";
-import { ClusterDatasource } from "./ClusterDatasource";
+import { Endpoint } from "../../device/Endpoint.js";
+import { createAttributeServer } from "./AttributeServer.js";
+import { ClusterDatasource } from "./ClusterDatasource.js";
 import {
     AttributeInitialValues,
     AttributeServers,
@@ -29,9 +29,9 @@ import {
     CommandServers,
     EventServers,
     SupportedEventsList,
-} from "./ClusterServerTypes";
-import { CommandServer } from "./CommandServer";
-import { createEventServer } from "./EventServer";
+} from "./ClusterServerTypes.js";
+import { CommandServer } from "./CommandServer.js";
+import { createEventServer } from "./EventServer.js";
 
 const logger = Logger.get("ClusterServer");
 

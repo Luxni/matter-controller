@@ -1,11 +1,11 @@
 
 
-import "@matter/react-native";
+// import "@matter/react-native";
 
-import { VariableService, asyncNew } from "@matter/general";
+import { Crypto, VariableService, asyncNew, singleton } from "@matter/general";
 import { Diagnostic, Environment, Logger, Time } from "@matter/general";
-import { MdnsService } from "@matter/protocol";
-
+import { Ble, MdnsService } from "@matter/protocol";
+import { BleReactNative, ReactNativeCrypto } from "@matter/react-native";
 import { CommissioningController, NodeCommissioningOptions } from "./CommissioningController";
 import { ControllerStore } from "./ControllerStore";
 import { NodeId } from "@matter/types";
@@ -15,13 +15,18 @@ const logger = Logger.get("Controller");
 
 const environment: Environment = Environment.default;
 
+Ble.get = singleton(
+    () => new BleReactNative()
+);
+
 export class Controller {
 
     private commissioningController: CommissioningController | undefined;
 
     async CommissioningControllerInit() {
+        // logger.info("controller init");
 
-        const controller_id = Time.nowMs().toString();
+        const controller_id = "123456789";
 
         try {
             // environment.set(Crypto, new ReactNativeCrypto());
@@ -55,6 +60,8 @@ export class Controller {
             await asyncNew(MdnsService, environment);
             // environment.set(MdnsService, _mdnsService);
 
+            environment.set(Crypto, new ReactNativeCrypto());
+
             logger.info(`controller id: ${controller_id}`);
             this.commissioningController = new CommissioningController({
                 environment: {
@@ -77,49 +84,49 @@ export class Controller {
 
     async start() {
 
-        await this.CommissioningControllerInit();
-        if (undefined === this.commissioningController) {
-            return;
-        }
-
         try {
+            await this.CommissioningControllerInit();
+            if (undefined === this.commissioningController) {
+                return;
+            }
+
             logger.info("start.....");
             await this.commissioningController.start();
         } catch (error) {
             logger.error(`${error}`);
-            return;
+            throw new Error(`${error}`);
         }
-        // this.networkInfo();
-        logger.info("goto commissioning");
-        await this.commissioning();
     }
 
-    async commissioning() {
+    // await controller.commissioningOverThread(Number(nodeid), networkName, operationalDataset, Number(discriminator), Number(passcode));
+
+    async commissioningOverThread(nodeId: number, networkName: string, operationalDataset: string, discriminator: number, passcode: number) {
 
         const commissioningOptions: NodeCommissioningOptions["commissioning"] = {
-            nodeId: NodeId(0x1),
+            nodeId: NodeId(nodeId),
             regulatoryLocation: GeneralCommissioning.RegulatoryLocationType.IndoorOutdoor,
             regulatoryCountryCode: "XX",
             // threadNetwork: {
             //     networkName: "OpenThread-ESP",
             //     operationalDataset: "0e080000000000010000000300000f4a0300001035060004001fffe00208dead00beef00cafe0708fd000db800a00000051000112233445566778899aabbccddeeff030e4f70656e5468726561642d455350010212340410104810e2315100afd6bc9215a6bfac530c0402a0f7f8",
             // },
-            wifiNetwork: {
-                wifiSsid: "homebridge",
-                wifiCredentials: "",
-            }
+            threadNetwork: {
+                networkName: networkName,
+                operationalDataset: operationalDataset,
+            },
+
         };
 
         const options: NodeCommissioningOptions = {
             commissioning: commissioningOptions,
             discovery: {
                 knownAddress: undefined,
-                identifierData: { instanceId: "1", longDiscriminator: 3840 },
+                identifierData: { instanceId: "1", longDiscriminator: discriminator },
                 discoveryCapabilities: {
                     ble: true,
                 },
             },
-            passcode: 20202021,
+            passcode: passcode,
         }
 
         logger.info(`Commissioning ... ${Diagnostic.json(options)}`);
@@ -131,78 +138,41 @@ export class Controller {
         }
     }
 
-    async commissioningOverThread(nodeId: number, networkName: string, operationalDataset: string, longDiscriminator: number, passcode: number) {
+    async commissioningOverWifi(nodeId: number, wifiSSID: string, wifiCredentials: string, discriminator: number, passcode: number) {
+        try {
+            console.log("start commissioning....");
+            const commissioningOptions: NodeCommissioningOptions["commissioning"] = {
+                nodeId: NodeId(nodeId),
+                regulatoryLocation: GeneralCommissioning.RegulatoryLocationType.IndoorOutdoor,
+                regulatoryCountryCode: "XX",
+                wifiNetwork: {
+                    wifiSsid: wifiSSID,
+                    wifiCredentials: wifiCredentials,
+                }
+            };
 
-        const commissioningOptions: NodeCommissioningOptions["commissioning"] = {
-            nodeId: NodeId(1),
-            regulatoryLocation: GeneralCommissioning.RegulatoryLocationType.IndoorOutdoor,
-            regulatoryCountryCode: "CN",
-            // threadNetwork: {
-            //     networkName: "OpenThread-ESP",
-            //     operationalDataset: "0e080000000000010000000300000f4a0300001035060004001fffe00208dead00beef00cafe0708fd000db800a00000051000112233445566778899aabbccddeeff030e4f70656e5468726561642d455350010212340410104810e2315100afd6bc9215a6bfac530c0402a0f7f8",
-            // },
-            threadNetwork: {
-                networkName: networkName,
-                operationalDataset: operationalDataset,
-            },
-        };
-
-        const options: NodeCommissioningOptions = {
-            commissioning: commissioningOptions,
-            discovery: {
-                knownAddress: undefined,
-                identifierData: { instanceId: "1", longDiscriminator: 3840 },
-                discoveryCapabilities: {
-                    ble: true,
+            const options: NodeCommissioningOptions = {
+                commissioning: commissioningOptions,
+                discovery: {
+                    knownAddress: undefined,
+                    identifierData: { instanceId: "1", longDiscriminator: discriminator },
+                    discoveryCapabilities: {
+                        ble: true,
+                    },
                 },
-            },
-            passcode: 20202021,
-        }
-
-        logger.info(`Commissioning over Thread ... ${Diagnostic.json(options)}`);
-        if (this.commissioningController) {
-            const nodeId = await this.commissioningController.commissionNode(options);
-            if (nodeId) {
-                console.log(`Commissioning successfully done with nodeId ${nodeId}`);
+                passcode: passcode,
             }
+
+            logger.info(`Commissioning ... ${Diagnostic.json(options)}`);
+            if (this.commissioningController) {
+                const nodeId = await this.commissioningController.commissionNode(options);
+                if (nodeId) {
+                    console.log(`Commissioning successfully done with nodeId ${nodeId}`);
+                }
+            }
+        } catch (error) {
+            console.error(error);
         }
     }
-
-    async commissioningOverWifi(nodeId: number, wifiSsid: string, wifiCredentials: string, longDiscriminator: number, passcode: number) {
-
-        const commissioningOptions: NodeCommissioningOptions["commissioning"] = {
-            nodeId: NodeId(nodeId),
-            regulatoryLocation: GeneralCommissioning.RegulatoryLocationType.IndoorOutdoor,
-            regulatoryCountryCode: "XX",
-            wifiNetwork: {
-                wifiSsid: wifiSsid,
-                wifiCredentials: wifiCredentials,
-            }
-        };
-
-        const options: NodeCommissioningOptions = {
-            commissioning: commissioningOptions,
-            discovery: {
-                knownAddress: undefined,
-                identifierData: {
-                    instanceId: "1",
-                    longDiscriminator: longDiscriminator,
-                },
-                discoveryCapabilities: {
-                    ble: true,
-                },
-            },
-            passcode: passcode,
-        }
-
-        logger.info(`Commissioning over Wifi\n${Diagnostic.json(options)}`);
-        if (this.commissioningController) {
-            const nodeId = await this.commissioningController.commissionNode(options);
-            if (nodeId) {
-                console.log(`Commissioning successfully done with nodeId ${nodeId}`);
-            }
-        }
-    }
-
 }
 

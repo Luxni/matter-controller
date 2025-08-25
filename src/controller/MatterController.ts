@@ -11,7 +11,7 @@
  */
 
 import { GeneralCommissioning } from "#clusters";
-import { NodeCommissioningOptions } from "../app/CommissioningController";
+import { NodeCommissioningOptions } from "./CommissioningController";
 import { CachedClientNodeStore } from "./device/CachedClientNodeStore";
 import { DeviceInformationData } from "./device/DeviceInformation";
 import {
@@ -24,14 +24,16 @@ import {
     ImplementationError,
     Logger,
     MatterError,
+    Minutes,
     NetInterfaceSet,
+    ServerAddress,
     ServerAddressIp,
-    serverAddressToString,
     StorageBackendMemory,
     StorageManager,
-} from "#general";
+} from "@matter/general";
 import { LegacyControllerStore } from "./LegacyControllerStore";
 import {
+    Advertiser,
     CertificateAuthority,
     ChannelManager,
     ClusterClient,
@@ -48,7 +50,6 @@ import {
     Fabric,
     FabricBuilder,
     FabricManager,
-    InstanceBroadcaster,
     InteractionClientProvider,
     NodeDiscoveryType,
     OperationalPeer,
@@ -61,7 +62,7 @@ import {
     SecureChannelProtocol,
     SessionManager,
     SubscriptionClient,
-} from "#protocol";
+} from "@matter/protocol";
 import {
     CaseAuthenticatedTag,
     ClusterId,
@@ -72,10 +73,10 @@ import {
     NodeId,
     TypeFromPartialBitSchema,
     VendorId,
-} from "#types";
+} from "@matter/types";
 import { ClassExtends } from "@matter/general";
-import { ControllerStoreInterface } from "@matter/node";
 import { ControllerCommissioningFlow, MessageChannel } from "@matter/protocol";
+import { ControllerStoreInterface } from "./ControllerStore";
 
 export type CommissionedNodeDetails = {
     operationalServerAddress?: ServerAddressIp;
@@ -383,16 +384,16 @@ export class MatterController {
         return [this.fabric];
     }
 
-    hasBroadcaster(broadcaster: InstanceBroadcaster) {
-        return this.#advertiser.hasBroadcaster(broadcaster);
+    hasAdvertiser(advertiser: Advertiser) {
+        return this.#advertiser.hasAdvertiser(advertiser);
     }
 
-    addBroadcaster(broadcaster: InstanceBroadcaster) {
-        this.#advertiser.addBroadcaster(broadcaster);
+    addAdvertiser(advertiser: Advertiser) {
+        this.#advertiser.addAdvertiser(advertiser);
     }
 
-    async deleteBroadcaster(broadcaster: InstanceBroadcaster) {
-        await this.#advertiser.deleteBroadcaster(broadcaster);
+    async deleteBroadcaster(advertiser: Advertiser) {
+        await this.#advertiser.deleteAdvertiser(advertiser);
     }
 
     public collectScanners(
@@ -477,7 +478,7 @@ export class MatterController {
             peerNodeId,
             {
                 discoveryType: NodeDiscoveryType.TimedDiscovery,
-                timeoutSeconds: 120,
+                timeout: Minutes(2),
                 discoveryData,
             },
             true,
@@ -511,7 +512,7 @@ export class MatterController {
             const { address, operationalAddress, discoveryData, deviceData } = peer as CommissionedPeer;
             return {
                 nodeId: address.nodeId,
-                operationalAddress: operationalAddress ? serverAddressToString(operationalAddress) : undefined,
+                operationalAddress: operationalAddress ? ServerAddress.urlFor(operationalAddress) : undefined,
                 advertisedName: discoveryData?.DN,
                 discoveryData,
                 deviceData,
@@ -527,7 +528,7 @@ export class MatterController {
         const { address, operationalAddress, discoveryData, deviceData } = nodeDetails;
         return {
             nodeId: address.nodeId,
-            operationalAddress: operationalAddress ? serverAddressToString(operationalAddress) : undefined,
+            operationalAddress: operationalAddress ? ServerAddress.urlFor(operationalAddress) : undefined,
             advertisedName: discoveryData?.DN,
             discoveryData,
             deviceData,
@@ -562,7 +563,7 @@ export class MatterController {
         return this.sessionManager.getNextAvailableSessionId();
     }
 
-    getResumptionRecord(resumptionId: Uint8Array) {
+    getResumptionRecord(resumptionId: Bytes) {
         return this.sessionManager.findResumptionRecordById(resumptionId);
     }
 
@@ -576,7 +577,7 @@ export class MatterController {
 
     announce() {
         // Announce the controller itself
-        return this.#advertiser.advertise();
+        this.#advertiser.enterOperationalMode();
     }
 
     async close() {
@@ -633,6 +634,15 @@ class CommissionedNodeStore extends PeerAddressStore {
     ) {
         super();
         this.#controllerStore = controllerStore;
+        // this.peers = new PeerSet({
+        //     channels:undefined,
+        //     exchanges:undefined,
+        //     netInterfaces:undefined,
+        //     scanners:undefined,
+        //     sessions:undefined,
+        //     store:undefined,
+        //     subscriptionClient:undefined,
+        // });
     }
 
     async createNodeStore(address: PeerAddress, load = true) {
