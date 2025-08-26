@@ -6,8 +6,7 @@ import { Crypto, VariableService, asyncNew, singleton } from "@matter/general";
 import { Diagnostic, Environment, Logger, Time } from "@matter/general";
 import { Ble, MdnsService } from "@matter/protocol";
 import { BleReactNative, ReactNativeCrypto } from "@matter/react-native";
-import { CommissioningController, NodeCommissioningOptions } from "./CommissioningController";
-import { ControllerStore } from "./ControllerStore";
+import { CommissioningController, ControllerStore, NodeCommissioningOptions } from "@project-chip/matter.js";
 import { NodeId } from "@matter/types";
 import { GeneralCommissioning } from "@matter/types/clusters/general-commissioning";
 
@@ -97,8 +96,6 @@ export class Controller {
             throw new Error(`${error}`);
         }
     }
-
-    // await controller.commissioningOverThread(Number(nodeid), networkName, operationalDataset, Number(discriminator), Number(passcode));
 
     async commissioningOverThread(nodeId: number, networkName: string, operationalDataset: string, discriminator: number, passcode: number) {
 

@@ -34,7 +34,7 @@ config.resolver!.extraNodeModules = {
     "@matter/types": matter_link("types"),
     "@matter/protocol": matter_link("protocol"),
     "@matter/react-native": matter_link("react-native"),
-    // "@protocol-chip/matter.js": path.resolve( "../../matter/matter.js/packages/matter.js/")
+    "@protocol-chip/matter.js": path.resolve( "../../matter/matter.js/packages/matter.js/")
 };
 
 config.watchFolders = [
@@ -45,7 +45,7 @@ config.watchFolders = [
     matter_link("types"),
     matter_link("protocol"),
     matter_link("react-native"),
-    // path.resolve("../../matter/matter.js/packages/matter.js/"),
+    path.resolve("../../matter/matter.js/packages/matter.js/"),
 ];
 
 
@@ -111,13 +111,15 @@ config.resolver!.resolveRequest = (context, moduleName, platform) => {
         return context.resolveRequest(context, mappedPath, platform);
     }
 
-    // if ("@project-chip/matter.js" === moduleName) {
-    //     const mappedPath = path.resolve("../../matter/matter.js/packages/matter.js/");
-    //     return {
-    //         "filePath": mappedPath,
-    //         "type": "sourceFile"
-    //     };
-    // }
+    if ([
+        "#ControllerStore.js",
+        "#LegacyControllerStore.js",
+        "#device/CachedClientNodeStore.js"
+    ].includes(moduleName)){
+        const subpath = moduleName.substring("#".length);
+        const mappedPath = path.resolve(__dirname, 'node_modules/@project-chip/matter.js', "dist/esm" , subpath);
+        return context.resolveRequest(context, mappedPath, platform);
+    }
 
     if ([
         "#general",
