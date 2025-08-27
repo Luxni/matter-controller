@@ -31,7 +31,7 @@
         "BLUETOOTH_ADMIN",
         "BLUETOOTH_SCAN",
         "BLUETOOTH_CONNECT",
-        "ACCESS_FINE_LOCATION"
+        "ACCESS_COARSE_LOCATION"
       ],
       "package": "com.anonymous.matterjs"
     },
