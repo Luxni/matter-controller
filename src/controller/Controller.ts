@@ -2,13 +2,14 @@
 
 // import "@matter/react-native";
 
-import { Crypto, VariableService, asyncNew, singleton } from "@matter/general";
+import { Crypto, VariableService, WebCrypto, asyncNew, singleton } from "@matter/general";
 import { Diagnostic, Environment, Logger, Time } from "@matter/general";
 import { Ble, MdnsService } from "@matter/protocol";
 import { BleReactNative, ReactNativeCrypto } from "@matter/react-native";
 import { CommissioningController, ControllerStore, NodeCommissioningOptions } from "@project-chip/matter.js";
 import { NodeId } from "@matter/types";
 import { GeneralCommissioning } from "@matter/types/clusters/general-commissioning";
+import QuickCrypto from "react-native-quick-crypto";
 
 const logger = Logger.get("Controller");
 
@@ -59,7 +60,7 @@ export class Controller {
             await asyncNew(MdnsService, environment);
             // environment.set(MdnsService, _mdnsService);
 
-            environment.set(Crypto, new ReactNativeCrypto());
+            environment.set(Crypto, new ReactNativeCrypto(QuickCrypto as unknown as WebCrypto));
 
             logger.info(`controller id: ${controller_id}`);
             this.commissioningController = new CommissioningController({
